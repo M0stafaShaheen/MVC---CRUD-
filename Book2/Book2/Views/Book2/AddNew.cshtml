@@ -1,0 +1,33 @@
+﻿ @model Book
+
+<form class="row mb-3" method="post" action="/Book2/SaveNew">
+    
+    <lable>Title</lable>
+    <input type="text" class="form-control" name="Title" value="@Model.Title" />
+
+    <lable>Description</lable>
+    <input type="text" class="form-control" name="Description" value="@Model.Description" />
+
+    <lable>PublishDate</lable>
+    <input type="date" class="form-control" name="PublishDate" value="@Model.PublishDate" />
+
+    <lable>Auther_Name</lable>
+    <select name="AutherId" id="AutherId" class="form form-control">
+        @foreach (Auther auth in ViewBag.AutherList)
+        {
+            if (Model.AutherId == auth.Id)
+            {
+                <option value="@auth.Id" selected>@auth.Name</option>
+            }
+            else
+            {
+                <option value="@auth.Id">@auth.Name</option>
+            }
+        }
+    </select>
+
+    <input type="submit" value="Add" />
+
+</form>
+
+<a href="/Book2/GetAll">Back To Books</a>

@@ -1,0 +1,46 @@
+﻿@model List<Auther> 
+@{
+    ViewData["Title"] = "ShowAutherBook";
+}
+
+<h1>ShowAutherBook</h1>
+
+
+<select name="AutherId" id="AutherId" class="form form-control" onchange="GetBook()">
+    <option value=0>--- Select Auther ---</option>
+    @foreach (Auther auther in Model)
+    {
+        <option value = "@auther.Id">@auther.Name</option>
+        
+    }
+
+</select>
+
+<!-- select to show books-->
+
+<select name = "books" id="books" class="form-check form-control" >
+
+</select>
+
+ @section Scripts 
+ {
+     <script>
+         function GetBook() {
+             var auther_id = document.getElementById("AutherId").value;
+             console.log(auther_id);
+             $.ajax({
+                 url: "/Book2/GetBookPerAuther",
+                 data: { "autherID":auther_id },
+                 success: function (result) {
+                     console.log(result) ; 
+                     document.getElementById("books").innerHTML="";  
+                     for (let book of result) { 
+                         document.getElementById("books").innerHTML+=  
+                         "<option value='"+book.id+"'>"+book.title+"</option>"
+                     
+                     }
+                 }
+             });
+         }
+     </script>
+ }

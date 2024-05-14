@@ -1,0 +1,260 @@
+﻿@model List<Book> 
+
+<button class="btn btn-sm btn-primary m-2" id="btnAddBook">Add Book</button>
+
+<!-- Table To show all books-->
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr class="text-center">
+            <th>
+                Name
+            </th>
+            <th>
+                Description
+            </th>
+            <th>
+                Publish Date
+            </th>
+            <th>
+                Auther Id
+            </th>
+            <th>
+                Action
+            </th>
+        </tr>
+    </thead>
+    <tbody id="table_data" class="text-center">
+    </tbody>
+
+</table>
+
+<!-- popup menue to Add New Book -->
+<div class="modal fade modal" id="Book-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="text-info modal-title" id="BookLable">Add Book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <lable>Title</lable>
+                <input type="text" placeholder="Enter Title" class="form-control" id="Title" autocomplete="off" required>
+
+                <lable>Description</lable>
+                <input type="text" placeholder="Enter Description" class="form-control" id="Description" autocomplete="off" />
+
+                <lable>PublishDate</lable>
+                <input type="date" placeholder="Enter PublishDate" class="form-control" id="PublishDate" autocomplete="off" />
+
+                <lable>Auther_Name</lable>
+                <select id="AutherId" class="form form-control">
+                    <option selected>--Select_Auther--</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="SaveBook">Save</button>
+                <button class="btn btn-primary" onclick="UpdateBook();" id="EditBook">Edit</button>
+                <button class="btn btn-danger btn-default" data-dismiss="modal" onclick="Close() ; ">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!--------------------------Java Script section--------------------------------->
+@section Scripts{
+
+    <script>
+        var authId;
+        var id;
+        var name;
+        var itemId;
+
+        $(document).ready(function () {
+            ShowBookData();
+            GetAuthers();
+            $('#AutherId').change(function () {
+                id = $(this).val();
+            })
+            $('#AutherId').change(function () {
+                authId = $(this).val();
+            })
+
+        })
+        // show all books (index view)
+        function ShowBookData() {
+            $.ajax({
+                url: "/Book2/BookList",
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    console.log(result);
+                    var html = '';
+                    $.each(result, function (key, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.title + '</td>';
+                        html += '<td>' + item.description + '</td>';
+                        html += '<td>' + item.publishDate + '</td>';
+                        html += '<td>' + item.autherName + '</td>';
+                        html += '<td><a href="#" class = "btn btn-primary" onclick ="Edit(' + item.id + ')" ; >Edit</a>  <a href="#" class = "btn btn-danger" onclick="Delete(' + item.id + ');">Delete</a></td>';
+                        html += '</tr>';
+                    });
+                    $('#table_data').html(html);
+                },
+                error: function (errormessage) 
+                {
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+        // when click on add-book button it do this function
+        $('#btnAddBook').click(function () {
+            ClearText();
+            id = 0;
+            $('#BookLable').text("Add Book");
+            $('#SaveBook').show(); // show Save Button
+            $('#EditBook').hide(); // hide Edit Button
+            $('#Book-modal').modal('show'); // show the pop-up menue
+        })
+
+        // when click on save button it open this function
+        $('#SaveBook').click(function () {
+            debugger
+            $('#AutherId').change(function () {
+                id = $(this).val();
+            })
+            // this object contain data of book (title - description - publishdate - autherid)
+            var obj = {
+                Title: $('#Title').val(),
+                Description: $('#Description').val(),
+                PublishDate: $('#PublishDate').val(),
+                AutherId: id
+            }
+            $.ajax({
+                url: "/Book2/saveBook",
+                data: obj,
+                type: "Post",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8;",
+                dataType: "json",
+                success: function (result) 
+                { 
+                    if (result.status == 200) {
+
+                        ShowBookData();
+                        HideModalPopup();
+                        ClearText();
+                    }
+                    else if (result.status == 428) {
+                        
+                    }
+                    alert(result.message);
+                },
+                error: function (errormessage) {
+                    alert('Data Can`t Be Saved');
+                }
+            });
+        })
+
+        // clear all input field in the pop-up menue
+        function ClearText() {
+            $('#Title').val('');
+            $('#Description').val('');
+            $('#PublishDate').val('');
+            $('#AutherId').val('--Select_Auther--');
+        }
+
+        // function to hide pop-up menue
+        function HideModalPopup() {
+            $('#Book-modal').modal('hide');
+        }
+
+        // delete function take id as parameter
+        function Delete(id) {
+            if (confirm('Are You Shure To Delete This Book?')) {
+                $.ajax({
+                    url: "/Book2/DeleteBook?id=" + id,
+                    success: function (result) {
+                        ShowBookData();
+                    },
+                    error: function (errormessage) {
+                        alert('Data Cant Be Deleted');
+                    }
+                });
+            }
+        }
+        // edit function (get the information of the book and put it in the fields)
+        function Edit(id) {
+            itemId = id;
+            $.ajax({
+                url: "/Book2/EditBook?id=" + id,
+                type: 'Get',
+                contentType: "application/x-www-form-urlencoded;charset=utf-8;",
+                dataType: 'json',
+                success: function (response) {
+                    $('#Book-modal').modal('show');
+                    $('#Title').val(response.title);
+                    $('#Description').val(response.description);
+                    $('#PublishDate').val(response.publishDate);
+                    $('#AutherId').val(response.autherId);
+
+                    $('#SaveBook').hide();
+                    $('#EditBook').show();
+                    $('#BookLable').text("Edit Book");
+                },
+                error: function (errormessage) {
+                    alert('Data Cant Be Deleted');
+                }
+            });
+        }
+
+        function UpdateBook() {
+
+
+            var obj = {
+                Id: itemId,
+                Title: $('#Title').val(),
+                Description: $('#Description').val(),
+                PublishDate: $('#PublishDate').val(),
+                AutherId: authId
+            }
+            $.ajax({
+                url: "/Book2/UpdateBook",
+                data: obj,
+                type: "Post",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8;",
+                dataType: "json",
+                success: function (result) {
+                    HideModalPopup();
+                    ShowBookData();
+                    ClearText();
+                },
+                error: function (errormessage) {
+                    alert('Data Cant Be Updated');
+                }
+            });
+        }
+        function Close() {
+            $('#Book-modal').modal('hide');
+            ClearText();
+        }
+
+        // function to get the authers and put thim in the drop down list
+        function GetAuthers() {
+            $.ajax({
+                url: "/Book2/GetAuthers",
+                success: function (result) {
+                    $.each(result, function (i, data) {
+                        $('#AutherId').append('<option value=' + data.id + '>' + data.name + '</option>')
+                    })
+                },
+                error: function (errormessage) {
+                    alert('Data Cant Be Updated');
+                }
+            });
+        }
+    </script>
+}

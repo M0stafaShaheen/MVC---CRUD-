@@ -1,0 +1,22 @@
+﻿@model Book
+
+<table class="table">
+    <tbody>
+        <tr>
+            <th>Name</th>
+            <td>@Model.Title</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>@Model.Description</td>
+        </tr>
+        <tr>
+            <th>PublishDate</th>
+            <td>@Model.PublishDate</td>
+        </tr>
+        <tr>
+            <th>Auther_Name</th>
+            <td> @ViewBag.SelectedAuther.Name </td>
+        </tr>
+    </tbody>
+</table>
